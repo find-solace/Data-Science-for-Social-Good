@@ -21,3 +21,29 @@ daily_calls <- calls %>% count(Date, sort = TRUE) %>%
 #joining the datasets to examine civilian-reported and police-reported incidents
 shared_dates <- inner_join(daily_calls, daily_incidents, by = "Date")
 
+#Converting to a long df and plotting
+plot_shared_dates <- shared_dates %>% gather(key = report, value = count, -Date)
+
+ggplot(plot_shared_dates, aes(x = Date, y = count)) + geom_point()+
+  geom_smooth(method = "lm", formula = y~x)
+
+#examining correlation between calls and incidents
+##correlation in daily incidents
+daily_core <- cor(shared_dates$n_calls, shared_dates$n_incidents)
+
+##correlation in monthly incidents
+correlation_df <- shared_dates %>% mutate(Month = month(as_date(Date))) %>% 
+  group_by(Month) %>% summarize(n_incidents = sum(n_incidents), n_calls = sum(n_calls))
+
+monthly_cor <- cor(correlation_df$n_calls, correlation_df$n_incidents)
+
+
+
+
+
+
+
+
+
+
+
