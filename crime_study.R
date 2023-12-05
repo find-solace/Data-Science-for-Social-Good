@@ -24,7 +24,7 @@ shared_dates <- inner_join(daily_calls, daily_incidents, by = "Date")
 #Converting to a long df and plotting
 plot_shared_dates <- shared_dates %>% gather(key = report, value = count, -Date)
 
-ggplot(plot_shared_dates, aes(x = Date, y = count)) + geom_point()+
+ggplot(plot_shared_dates, aes(x = Date, y = count, color = report)) + geom_point()+
   geom_smooth(method = "lm", formula = y~x)
 
 #examining correlation between calls and incidents
@@ -55,6 +55,41 @@ plot_incidents_freq <- incidents_shared_dates %>% count(Descript) %>% top_n(15, 
   xlab("Crime description") + ylab("Count") + ggtitle("Incident Reported Crimes") +
   coord_flip() + theme_minimal()
 plot_incidents_freq
+
+##Great variability in type of crime between the call reported crimes and
+##incident reported crimes. However, the 12th call-reported crime coincides with
+##the first incident-reported crime
+
+#Comparing top location of stolen vehicles with civilian reports of
+#stolen vehicles
+
+location_calls <- calls_shared_dates %>% filter(Descript == "Auto Boost / Strip") %>%
+  count(Address) %>% arrange(desc(n)) %>% top_n(10, n)
+
+location_incidents <- incidents_shared_dates %>% filter(Descript == "GRAND THEFT FROM LOCKED AUTO") %>%
+  count(Address) %>% arrange(desc(n)) %>% top_n(10, n)
+
+#Visualizing the frequency of auto crimes in San Fransisco
+library(ggmap)
+
+#reading in a static map of San Fransisco
+sf_map <- readRDS("sf_map.RDS")
+
+auto_incidents <- incidents_shared_dates %>%
+  filter(Descript == "GRAND THEFT FROM LOCKED AUTO")
+
+#plotting a density map and overlaying the auto incidents
+  ggmap(sf_map) +
+  stat_density_2d(
+    aes(x = X, y = Y, fill = ..level..), alpha = 0.15,
+    size = 0.01, bins = 30, data = auto_incidents,
+    geom = "polygon")
+  
+
+
+
+
+
 
 
 
