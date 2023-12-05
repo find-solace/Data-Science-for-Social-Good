@@ -37,6 +37,25 @@ correlation_df <- shared_dates %>% mutate(Month = month(as_date(Date))) %>%
 
 monthly_cor <- cor(correlation_df$n_calls, correlation_df$n_incidents)
 
+#Subsetting the calls and incidents datasets by the shared dates 
+calls_shared_dates <- semi_join(calls, shared_dates, by = "Date")
+identical(sort(unique(shared_dates$Date)), sort(unique(calls_shared_dates$Date)))
+
+incidents_shared_dates <- semi_join(incidents, shared_dates, by = "Date")
+
+#Visualizing the top call and incident crime types
+plot_calls_freq <- calls_shared_dates %>% count(Descript) %>% top_n(15, n) %>%
+  ggplot(aes(x = reorder(Descript, n), y = n)) + geom_bar(stat = "identity") +
+  xlab("Crime Description") + ylab("Count") + ggtitle("Calls Reported Crimes")+
+  coord_flip()
+plot_calls_freq
+
+plot_incidents_freq <- incidents_shared_dates %>% count(Descript) %>% top_n(15, n) %>%
+  ggplot(aes(x = reorder(Descript, n), y = n)) + geom_bar(stat = "identity") +
+  xlab("Crime description") + ylab("Count") + ggtitle("Incident Reported Crimes") +
+  coord_flip() + theme_minimal()
+plot_incidents_freq
+
 
 
 
